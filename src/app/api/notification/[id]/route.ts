@@ -12,8 +12,7 @@ export async function GET(req: NextRequest) {
         }
 
         const notification = await prisma.notification.findUnique({
-            where: { id },
-            include: { order: true },
+            where: { id }
         });
 
         if (!notification) {
