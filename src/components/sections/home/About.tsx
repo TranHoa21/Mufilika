@@ -4,8 +4,7 @@ import Image from 'next/image';
 import { FaPlay, FaPhoneAlt } from 'react-icons/fa';
 import CountUp from 'react-countup';
 import { useInView } from 'react-intersection-observer';
-import { motion } from 'framer-motion';
-
+import { motion, cubicBezier } from 'framer-motion';
 const stats = [
     { value: 99000, suffix: 'K', label: 'Happy Travellers' },
     { value: 21, suffix: '+', label: 'Top Destinations' },
@@ -20,10 +19,10 @@ const fadeInUp = {
         y: 0,
         transition: {
             duration: 0.6,
-            ease: [0.25, 0.1, 0.25, 1], // tương đương với 'easeOut'
+            ease: cubicBezier(0.25, 0.1, 0.25, 1), // ✔️ đúng kiểu
         },
     },
-}
+};
 
 const DesertTourHero = () => {
     const { ref, inView } = useInView({ triggerOnce: true, threshold: 0.3 });
