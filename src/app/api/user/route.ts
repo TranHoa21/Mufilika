@@ -10,7 +10,6 @@ export async function GET() {
             include: {
                 posts: true,
                 comments: true,
-                notification: true,
             },
         });
         return NextResponse.json(users);

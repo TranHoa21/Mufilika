@@ -21,7 +21,6 @@ export async function GET(req: NextRequest) {
             include: {
                 posts: true,
                 comments: true,
-                notification: true,
             },
         });
 

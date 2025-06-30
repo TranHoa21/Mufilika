@@ -17,7 +17,7 @@ model User {
 
   bookings     Booking[]         // Các đơn đặt tour của người dùng
   messages     ContactMessage[]  @relation("UserMessages") // Tin nhắn liên hệ
-  posts        Post[]            @relation("AuthorPosts")
+   posts     Post[] @relation("AuthorPosts")
   comments     Comment[]
   notifications Notification[]
 }
@@ -115,35 +115,48 @@ model ContactMessage {
 }
 
 model Post {
-  id          String     @id @default(uuid())
-  title       String
-  slug        String     @unique
-  excerpt     String?
-  content     String
-  imageUrl    String?
-  published   Boolean    @default(false)
-  status      String     @default("draft")
-  createdAt   DateTime   @default(now())
-  updatedAt   DateTime   @updatedAt
+  id              String   @id @default(uuid())
+  title           String
+  slug            String   @unique
+  excerpt         String?
+  content         String
+  imageUrl        String?
+  metaTitle       String?
+  metaDescription String?
+  keywords        String?
+  canonicalUrl    String?
+  published       Boolean  @default(false)
+  status          String   @default("draft")
+  featured        Boolean  @default(false)
+  likes           Int      @default(0)
+  views           Int      @default(0)
+  readingTime     Int?
+  postType        String   @default("article")
 
-  categoryId  String?
-  category    Category?  @relation(fields: [categoryId], references: [id])
+  // 👇 Quan hệ với User (author)
+  authorId        String?
+  author          User?    @relation("AuthorPosts", fields: [authorId], references: [id])
 
-  // Sửa tại đây
-  tags        Tag[]      @relation("PostTags")
+  // 👇 Quan hệ với Category
+  categoryId      String?
+  category        Category? @relation("CategoryPosts", fields: [categoryId], references: [id])
 
-  comments    Comment[]
-  viewsLog    PostView[]
+  // 👇 Quan hệ khác
+  tags            Tag[]     @relation("PostTags")
+  images          PostImage[]
+  comments        Comment[]
+  viewsLog        PostView[]
 
-  authorId    String?
-  author      User?      @relation("AuthorPosts", fields: [authorId], references: [id])
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
 }
+
 
 model Category {
   id    String @id @default(uuid())
   name  String @unique
   slug  String @unique
-  posts Post[]
+  posts Post[] @relation("CategoryPosts") // ⬅️ thêm tên quan hệ đối ứng
 }
 
 model Tag {
@@ -177,6 +190,17 @@ model PostView {
   ip        String
   userAgent String
   createdAt DateTime @default(now())
+}
+model PostImage {
+  id        Int      @id @default(autoincrement()) // ID duy nhất, tự động tăng
+  imageUrl  String // URL của hình ảnh
+  altText   String? // Mô tả cho hình ảnh (alt text), có thể NULL
+  createdAt DateTime @default(now()) // Thời gian tạo
+  updatedAt DateTime @updatedAt // Thời gian cập nhật
+
+  // Nếu bạn muốn liên kết với bảng `Post` (ví dụ bài viết)
+  postId String? // ID bài viết liên kết (có thể NULL nếu không có)
+  post   Post?   @relation(fields: [postId], references: [id]) // Quan hệ với bảng Post
 }
 
 model Notification {
