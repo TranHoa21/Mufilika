@@ -26,35 +26,33 @@ enum Role {
   ADMIN
   CUSTOMER
 }
-
 model Tour {
-  id          String        @id @default(uuid())
-  name        String
-  description String?
-  price       Float
-  duration    Int           // Thời gian tour (tính bằng ngày)
-  createdAt   DateTime      @default(now())
-  updatedAt   DateTime      @updatedAt
+  id            String        @id @default(cuid())
+  name          String
+  slug          String        @unique
+  address       String
+  description   String
+  duration      Int
+  maxGuests     Int
+  price         Float
+  image         String
+  included      String[]
+  notIncluded   String[]
 
-  activities  Activity[]
-  images      TourImage[]
-  bookings    BookingItem[]     // Chi tiết đặt tour trong booking
-  reviews     Testimonial[]
+  days          TourInDay[]   @relation("TourDaysBySlug") // 
+  bookings      BookingItem[]
+  reviews       Testimonial[]
 }
 
-model Activity {
-  id          String @id @default(uuid())
+model TourInDay {
+  id          String   @id @default(cuid())
   name        String
+  slug        String   @unique
+  slugTour    String   // Khóa ngoại
+  image       String?
   description String
-  tourId      String
-  tour        Tour   @relation(fields: [tourId], references: [id])
-}
 
-model TourImage {
-  id     String @id @default(uuid())
-  url    String
-  tourId String
-  tour   Tour   @relation(fields: [tourId], references: [id])
+  tour        Tour     @relation("TourDaysBySlug", fields: [slugTour], references: [slug])
 }
 
 model Testimonial {
@@ -74,7 +72,6 @@ model Booking {
   name          String
   email         String
   phone         String
-  address       String
   paymentMethod String
   transactionNo String?
   paymentTime   DateTime?

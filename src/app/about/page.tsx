@@ -1,16 +1,16 @@
 'use client';
 import React from 'react';
-import WhyUs from "@/components/sections/home/About";
-import CustomerTestimonials from "@/components/sections/home/TourGuides";
-import WhyChooseUs from "@/components/sections/home/Testimonials";
+import DesertTourHero from "@/components/sections/home/About";
 import Link from "next/link";
+import ValuesMissionVision from "@/components/sections/about/ValuesMissionVision";
+import AchievementsSection from "@/components/sections/about/AchievementsSection"
 const AboutPage = () => {
     return (
         <>
             <div
                 className="text-center text-white py-24"
                 style={{
-                    backgroundImage: `url(/images/bg1.jpg)`,
+                    backgroundImage: `url(/images/closeup-shot-elephants-standing-near-lake-sunset.webp)`,
                     backgroundSize: "cover",
                     backgroundPosition: "center",
                 }}
@@ -22,10 +22,9 @@ const AboutPage = () => {
                     <Link href="/about" className="hover:underline">About Us</Link>
                 </h6>
             </div>
-            <WhyUs />
-            <WhyChooseUs />
-            <CustomerTestimonials />
-
+            <DesertTourHero />
+            <ValuesMissionVision />
+            <AchievementsSection />
         </>
     );
 };

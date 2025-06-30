@@ -1,14 +1,15 @@
 'use client';
 import React from 'react';
-import ContactSection from "@/components/sections/home/ContactSection";
+import ContactSection from "@/components/sections/contact/ContactSection";
 import Link from "next/link";
+import ContactFormSection from "@/components/sections/contact/ContactFormSection"
 const AppointmentPage = () => {
     return (
         <>
             <div
                 className="text-center text-white py-24"
                 style={{
-                    backgroundImage: `url(/images/bg1.jpg)`,
+                    backgroundImage: `url(/images/closeup-shot-elephants-standing-near-lake-sunset.webp)`,
                     backgroundSize: "cover",
                     backgroundPosition: "center",
                 }}
@@ -21,7 +22,7 @@ const AppointmentPage = () => {
                 </h6>
             </div>
             <ContactSection />
-
+            <ContactFormSection />
         </>
     );
 };

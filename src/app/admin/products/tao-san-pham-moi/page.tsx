@@ -7,83 +7,86 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import Image from 'next/image';
-import { motion } from "framer-motion";
+import { motion } from 'framer-motion';
 
-export default function AdminAddProductPage() {
+export default function AdminAddTourPage() {
     const [name, setName] = useState('');
-    const [description, setDescription] = useState('');
-    const [price, setPrice] = useState('');
-    const [originalPrice, setOriginalPrice] = useState('');
-    const [sale, setSale] = useState(false);
-    const [rating, setRating] = useState('');
     const [slug, setSlug] = useState('');
+    const [address, setAddress] = useState('');
+    const [description, setDescription] = useState('');
+    const [duration, setDuration] = useState('');
+    const [maxGuests, setMaxGuests] = useState('');
+    const [price, setPrice] = useState('');
+    const [included, setIncluded] = useState('');
+    const [notIncluded, setNotIncluded] = useState('');
 
-    const [imageUrl, setImageUrl] = useState<File | null>(null);
+    const [imageFile, setImageFile] = useState<File | null>(null);
     const [previewImageUrl, setPreviewImageUrl] = useState<string | null>(null);
 
-    const [images, setImages] = useState<FileList | null>(null);
-    const [previewImages, setPreviewImages] = useState<string[]>([]);
+    const [days, setDays] = useState([
+        { name: '', slug: '', description: '', image: null as File | null }
+    ]);
 
     const router = useRouter();
 
-    // ✅ Xử lý chọn ảnh đại diện (imageUrl)
-    const handleMainImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const file = e.target.files?.[0];
-        if (file) {
-            setImageUrl(file);
-            setPreviewImageUrl(URL.createObjectURL(file));
-        }
+    const handleAddDay = () => {
+        setDays([...days, { name: '', slug: '', description: '', image: null }]);
     };
 
-    // ✅ Xử lý chọn nhiều ảnh phụ (images)
-    const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const files = e.target.files;
-        if (files) {
-            setImages(files);
-            const previews = Array.from(files).map((file) => URL.createObjectURL(file));
-            setPreviewImages(previews);
-        }
+    const handleDayChange = (index: number, field: string, value: string | File | null) => {
+        const updated = [...days];
+        updated[index] = { ...updated[index], [field]: value };
+        setDays(updated);
     };
 
-    const handleSubmit = async (e: React.FormEvent) => {
+    const handleTourSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
 
         const formData = new FormData();
         formData.append('name', name);
-        formData.append('description', description);
-        formData.append('price', price);
-        formData.append('originalPrice', originalPrice);
-        formData.append('sale', String(sale));
-        formData.append('rating', rating);
         formData.append('slug', slug);
+        formData.append('address', address);
+        formData.append('description', description);
+        formData.append('duration', duration);
+        formData.append('maxGuests', maxGuests);
+        formData.append('price', price);
+        formData.append('included', included); // string
+        formData.append('notIncluded', notIncluded);
 
-        if (imageUrl) {
-            formData.append('imageUrl', imageUrl);
-        }
-
-        if (images) {
-            Array.from(images).forEach((file) => {
-                formData.append('images', file);
-            });
+        if (imageFile) {
+            formData.append('image', imageFile);
         }
 
         try {
-            const res = await fetch('/api/products', {
+            const res = await fetch('/api/tours', {
                 method: 'POST',
                 body: formData,
             });
 
             const result = await res.json();
 
-            if (res.ok) {
-                alert('Thêm sản phẩm thành công!');
-                router.push('/admin/products');
-            } else {
-                alert(result.error || 'Thêm sản phẩm thất bại.');
+            if (!res.ok) throw new Error(result.error);
+
+            // Tạo từng TourInDay sau khi tour được tạo thành công
+            for (const day of days) {
+                const dayForm = new FormData();
+                dayForm.append('name', day.name);
+                dayForm.append('slug', day.slug);
+                dayForm.append('slugTour', slug);
+                dayForm.append('description', day.description);
+                if (day.image) dayForm.append('image', day.image);
+
+                await fetch('/api/tourInDay', {
+                    method: 'POST',
+                    body: dayForm,
+                });
             }
-        } catch (error) {
-            console.error(error);
-            alert('Lỗi khi gửi dữ liệu');
+
+            alert('Tạo tour thành công!');
+            router.push('/admin/tours');
+        } catch (err) {
+            console.error(err);
+            alert('Lỗi khi tạo tour.');
         }
     };
 
@@ -91,48 +94,99 @@ export default function AdminAddProductPage() {
         <motion.div
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, ease: "easeOut" }}
-            className="max-w-2xl mx-auto py-10">
-            <h1 className="text-2xl font-bold mb-6">Thêm sản phẩm mới</h1>
-            <form onSubmit={handleSubmit} className="space-y-6">
-                <Label>Tên sản phẩm</Label>
-                <Input value={name} onChange={(e) => setName(e.target.value)} required />
-
-                <Label>Mô tả</Label>
-                <Textarea value={description} onChange={(e) => setDescription(e.target.value)} rows={4} />
-
-                <Label>Giá</Label>
-                <Input type="number" step="0.01" value={price} onChange={(e) => setPrice(e.target.value)} required />
-
-                <Label>Giá gốc</Label>
-                <Input type="number" step="0.01" value={originalPrice} onChange={(e) => setOriginalPrice(e.target.value)} required />
-
-                <Label>Giảm giá</Label>
-                <input type="checkbox" checked={sale} onChange={(e) => setSale(e.target.checked)} />
-
-                <Label>Đánh giá</Label>
-                <Input type="number" min="1" max="5" value={rating} onChange={(e) => setRating(e.target.value)} required />
-
-                <Label>Slug</Label>
-                <Input value={slug} onChange={(e) => setSlug(e.target.value)} required />
-
-                {/* ✅ Chọn ảnh đại diện */}
-                <Label>Ảnh đại diện</Label>
-                <Input type="file" accept="image/*" onChange={handleMainImageChange} required />
-                {previewImageUrl && (
-                    <Image src={previewImageUrl} alt="Ảnh đại diện" width={100} height={100} className="rounded-md object-cover" />
-                )}
-
-                {/* ✅ Chọn nhiều ảnh phụ */}
-                <Label>Ảnh sản phẩm (có thể chọn nhiều)</Label>
-                <Input type="file" accept="image/*" multiple onChange={handleImageChange} required />
-                <div className="flex gap-3">
-                    {previewImages.map((src, index) => (
-                        <Image key={index} src={src} alt={`Ảnh ${index}`} width={100} height={100} className="rounded-md object-cover" />
-                    ))}
+            transition={{ duration: 0.8, ease: 'easeOut' }}
+            className="max-w-3xl mx-auto py-10"
+        >
+            <h1 className="text-2xl font-bold mb-6">Tạo Tour mới</h1>
+            <form onSubmit={handleTourSubmit} className="space-y-6">
+                <div>
+                    <Label>Tên tour</Label>
+                    <Input value={name} onChange={(e) => setName(e.target.value)} required />
+                </div>
+                <div>
+                    <Label>Slug</Label>
+                    <Input value={slug} onChange={(e) => setSlug(e.target.value)} required />
+                </div>
+                <div>
+                    <Label>Địa điểm</Label>
+                    <Input value={address} onChange={(e) => setAddress(e.target.value)} required />
+                </div>
+                <div>
+                    <Label>Mô tả</Label>
+                    <Textarea value={description} onChange={(e) => setDescription(e.target.value)} rows={4} />
+                </div>
+                <div>
+                    <Label>Thời lượng (ngày)</Label>
+                    <Input value={duration} onChange={(e) => setDuration(e.target.value)} required />
+                </div>
+                <div>
+                    <Label>Số khách tối đa</Label>
+                    <Input value={maxGuests} onChange={(e) => setMaxGuests(e.target.value)} required />
+                </div>
+                <div>
+                    <Label>Giá</Label>
+                    <Input value={price} onChange={(e) => setPrice(e.target.value)} required />
+                </div>
+                <div>
+                    <Label>Ảnh đại diện</Label>
+                    <Input type="file" accept="image/*" onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) {
+                            setImageFile(file);
+                            setPreviewImageUrl(URL.createObjectURL(file));
+                        }
+                    }} required />
+                    {previewImageUrl && (
+                        <Image src={previewImageUrl} alt="Preview" width={120} height={80} className="rounded mt-2" />
+                    )}
+                </div>
+                <div>
+                    <Label>Included (comma-separated)</Label>
+                    <Textarea
+                        value={included}
+                        onChange={(e) => setIncluded(e.target.value)}
+                        placeholder="e.g. Hotel, Meals, Local guide"
+                        rows={2}
+                    />
                 </div>
 
-                <Button type="submit">Thêm sản phẩm</Button>
+                <div>
+                    <Label>Not Included (comma-separated)</Label>
+                    <Textarea
+                        value={notIncluded}
+                        onChange={(e) => setNotIncluded(e.target.value)}
+                        placeholder="e.g. Flight tickets, Travel insurance"
+                        rows={2}
+                    />
+                </div>
+
+                <div className="mt-6">
+                    <h2 className="text-xl font-semibold mb-2">Các ngày trong tour</h2>
+                    {days.map((day, index) => (
+                        <div key={index} className="p-4 border rounded space-y-3 mb-4">
+                            <Label>Tên ngày</Label>
+                            <Input value={day.name} onChange={(e) => handleDayChange(index, 'name', e.target.value)} />
+
+                            <Label>Slug</Label>
+                            <Input value={day.slug} onChange={(e) => handleDayChange(index, 'slug', e.target.value)} />
+
+                            <Label>Mô tả</Label>
+                            <Textarea value={day.description} onChange={(e) => handleDayChange(index, 'description', e.target.value)} rows={2} />
+
+                            <Label>Ảnh</Label>
+                            <Input type="file" accept="image/*" onChange={(e) => {
+                                const file = e.target.files?.[0];
+                                handleDayChange(index, 'image', file || null);
+                            }} />
+                        </div>
+                    ))}
+
+                    <Button type="button" onClick={handleAddDay}>
+                        + Thêm ngày
+                    </Button>
+                </div>
+
+                <Button type="submit">Tạo tour</Button>
             </form>
         </motion.div>
     );

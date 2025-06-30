@@ -4,9 +4,9 @@ import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
-import BannerSectionBlog from "@/components/sections/home/BannerSectionBlog";
+import BannerSectionBlog from '@/components/sections/home/BannerSectionBlog';
 import { Star } from 'lucide-react';
-import { motion } from "framer-motion";
+import { motion } from 'framer-motion';
 
 interface BlogPost {
     title: string;
@@ -52,6 +52,7 @@ export default function BlogDetailPage() {
         if (storedUser) {
             setUser(JSON.parse(storedUser));
         }
+
         const fetchPost = async () => {
             const res = await fetch(`/api/posts/${slug}`);
             const data = await res.json();
@@ -63,7 +64,7 @@ export default function BlogDetailPage() {
 
             const related = await fetch('/api/posts');
             const relatedData = await related.json();
-            setRelatedPosts(relatedData.filter((p: BlogPost) => p.slug !== slug).slice(0, 3));
+            setRelatedPosts(relatedData.filter((p: BlogPost) => p.slug !== slug).slice(0, 4));
 
             const product = await fetch('/api/products');
             const productData = await product.json();
@@ -107,18 +108,25 @@ export default function BlogDetailPage() {
         <motion.section
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, ease: "easeOut" }}
-            className=" mx-auto py-12 px-4 bg-[#031d2e] w-full"
+            transition={{ duration: 0.8, ease: 'easeOut' }}
+            className="mx-auto py-12 px-4 bg-[#031d2e] w-full"
         >
             <nav className="text-sm text-gray-400 mb-4">
-                <Link href="/" className="hover:underline">Home</Link> / <Link href="/blog" className="hover:underline">Blog</Link> / <span className="text-orange-400">{post.title}</span>
+                <Link href="/" className="hover:underline">
+                    Home
+                </Link>{' '}
+                /{' '}
+                <Link href="/blog" className="hover:underline">
+                    Blog
+                </Link>{' '}
+                / <span className="text-orange-400">{post.title}</span>
             </nav>
 
             <div className="flex flex-col lg:flex-row gap-10">
-                {/* LEFT: Main Post */}
                 <div className="flex-1">
-                    <h1 className="text-4xl font-extrabold text-orange-400 mb-4 leading-tight">{post.title}</h1>
-
+                    <h1 className="text-4xl font-extrabold text-orange-400 mb-4 leading-tight">
+                        {post.title}
+                    </h1>
                     <div className="text-sm text-gray-400 mb-6">
                         <span>{new Date(post.createdAt).toLocaleDateString()}</span>
                     </div>
@@ -138,16 +146,17 @@ export default function BlogDetailPage() {
                     <article
                         className="prose prose-lg max-w-none text-gray-300 leading-relaxed"
                         dangerouslySetInnerHTML={{ __html: post.content }}
-                    ></article>
+                    />
 
-                    {/* Comments Section */}
                     <div className="mt-[5%]">
                         <h2 className="text-2xl font-semibold text-white mb-6">Comments</h2>
                         <div className="space-y-6">
                             {comments.map((comment) => (
                                 <div key={comment.id} className="bg-[#031d2e] p-4 rounded-lg shadow-sm">
                                     <p className="font-medium text-white">{comment.author}</p>
-                                    <p className="text-sm text-gray-400">{new Date(comment.createdAt).toLocaleDateString()}</p>
+                                    <p className="text-sm text-gray-400">
+                                        {new Date(comment.createdAt).toLocaleDateString()}
+                                    </p>
                                     <p className="mt-2 text-gray-300">{comment.content}</p>
                                 </div>
                             ))}
@@ -172,11 +181,10 @@ export default function BlogDetailPage() {
                     </div>
                 </div>
 
-                {/* RIGHT: Sidebar */}
                 <aside className="w-full lg:w-[35%] lg:pl-8 lg:border-l lg:border-gray-700">
                     <h2 className="text-2xl font-semibold text-white mb-6">Featured Posts</h2>
                     <div className="space-y-6">
-                        {relatedPosts.slice(0, 4).map((rp) => (
+                        {relatedPosts.map((rp) => (
                             <Link
                                 key={rp.slug}
                                 href={`/blog/${rp.slug}`}
@@ -231,9 +239,13 @@ export default function BlogDetailPage() {
                                                 ))}
                                             </div>
                                             <div className="flex items-center gap-2">
-                                                <p className="text-orange-400 font-semibold">{formatPrice(product.price)}</p>
+                                                <p className="text-orange-400 font-semibold">
+                                                    {formatPrice(product.price)}
+                                                </p>
                                                 {product.sale && product.originalPrice && (
-                                                    <p className="text-gray-500 line-through text-sm">{formatPrice(product.originalPrice)}</p>
+                                                    <p className="text-gray-500 line-through text-sm">
+                                                        {formatPrice(product.originalPrice)}
+                                                    </p>
                                                 )}
                                             </div>
                                         </div>
@@ -245,16 +257,27 @@ export default function BlogDetailPage() {
                 </aside>
             </div>
 
-            {/* Related posts */}
             <div className="w-full mt-12 border-t border-gray-700 pt-8">
                 <h1 className="text-4xl font-semibold text-white mb-8">You Might Also Like</h1>
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                    {relatedPosts.slice(0, 4).map((rp) => (
-                        <Link key={rp.slug} href={`/blog/${rp.slug}`} className="block bg-[#08273c] p-4 rounded-lg shadow hover:shadow-md transition">
+                    {relatedPosts.map((rp) => (
+                        <Link
+                            key={rp.slug}
+                            href={`/blog/${rp.slug}`}
+                            className="block bg-[#08273c] p-4 rounded-lg shadow hover:shadow-md transition"
+                        >
                             {rp.imageUrl && (
-                                <Image src={rp.imageUrl} alt={rp.title} width={400} height={250} className="w-full h-40 object-cover rounded-md mb-3" />
+                                <Image
+                                    src={rp.imageUrl}
+                                    alt={rp.title}
+                                    width={400}
+                                    height={250}
+                                    className="w-full h-40 object-cover rounded-md mb-3"
+                                />
                             )}
-                            <h3 className="text-lg font-semibold text-white hover:text-orange-400 line-clamp-2">{rp.title}</h3>
+                            <h3 className="text-lg font-semibold text-white hover:text-orange-400 line-clamp-2">
+                                {rp.title}
+                            </h3>
                         </Link>
                     ))}
                 </div>

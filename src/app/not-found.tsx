@@ -1,52 +1,27 @@
-'use client';
+// components/Custom404.tsx
 
-import Link from 'next/link';
-import { motion } from 'framer-motion';
+import Link from "next/link";
 
-export default function NotFound() {
+export default function Custom404() {
     return (
-        <div className="flex flex-col items-center justify-center min-h-screen bg-[#15394c] text-white px-4 text-center">
-            <motion.h1
-                className="text-[120px] font-bold leading-none"
-                initial={{ opacity: 0, y: -30 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6 }}
-            >
-                404
-            </motion.h1>
-
-            <motion.h2
-                className="text-2xl tracking-widest uppercase mt-4"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 0.3 }}
-            >
-                Page Not Found
-            </motion.h2>
-
-            <motion.p
-                className="text-gray-300 mt-6 text-base"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 0.5 }}
-            >
-                Sorry. We ca not seem to find the page you are looking for.
-            </motion.p>
-
-            <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 0.7 }}
-                className="mt-10"
-            >
-                <Link
-                    href="/"
-                    className="relative inline-block px-10 py-3 bg-orange-500 text-white font-semibold rounded-md hover:bg-orange-600 transition-all"
-                >
-                    <span className="absolute inset-0 transform rotate-3 scale-105 rounded-md bg-orange-500 opacity-20"></span>
-                    BACK TO HOME
+        <div className="min-h-screen bg-[#fdfaf4] flex items-center justify-center px-4">
+            <div className="bg-[#422b21] text-white p-10 rounded-md max-w-xl w-full text-center relative">
+                <div className="mb-2 text-sm tracking-widest uppercase font-semibold text-white/70 flex items-center justify-center gap-2">
+                    <span>✼</span> Page Not Found
+                </div>
+                <h1 className="text-6xl font-bold mb-4">Error 404</h1>
+                <p className="text-lg mb-8 text-white/90">
+                    The page you are looking for might have been removed, had its name
+                    changed or is temporarily unavailable.
+                </p>
+                <Link href="/">
+                    <a className="bg-[#a37d5e] hover:bg-[#8a684d] transition-colors text-white font-semibold py-3 px-6 rounded-md shadow">
+                        Bring Me To The Home
+                    </a>
                 </Link>
-            </motion.div>
+                {/* Optional: Background topography effect */}
+                <div className="absolute inset-0 bg-[url('/pattern.svg')] opacity-5 pointer-events-none" />
+            </div>
         </div>
     );
 }

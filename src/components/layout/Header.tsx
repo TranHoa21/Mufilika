@@ -32,7 +32,7 @@ export default function Header() {
           <Link href="/about" className="hover:text-[#14190f]">About us</Link>
           <Link href="/packages" className="hover:text-[#14190f]">Packages</Link>
           <Link href="/blog" className="hover:text-[#14190f]">Blog</Link>
-          <Link href="/contact-us" className="hover:text-[#14190f]">Contact us</Link>
+          <Link href="/contact" className="hover:text-[#14190f]">Contact us</Link>
         </nav>
 
         {/* Book Now Button - Desktop */}
@@ -60,7 +60,7 @@ export default function Header() {
           <Link href="/about" onClick={() => setMenuOpen(false)} className="block hover:text-[#14190f]">About us</Link>
           <Link href="/packages" onClick={() => setMenuOpen(false)} className="block hover:text-[#14190f]">Packages</Link>
           <Link href="/blog" onClick={() => setMenuOpen(false)} className="block hover:text-[#14190f]">Blog</Link>
-          <Link href="/contact-us" onClick={() => setMenuOpen(false)} className="block hover:text-[#14190f]">Contact us</Link>
+          <Link href="/contact" onClick={() => setMenuOpen(false)} className="block hover:text-[#14190f]">Contact us</Link>
           <Link
             href="/book"
             onClick={() => setMenuOpen(false)}
