@@ -112,10 +112,10 @@ export default function BookingForm() {
         <section className="flex flex-col md:flex-row w-full min-h-screen">
             {/* Left Form */}
             <motion.div
-                initial={{ opacity: 0, y: 100 }} // y tăng để hiệu ứng từ dưới lên rõ hơn
+                initial={{ opacity: 0, y: 30 }}
                 whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.8, ease: 'easeOut' }}
-                viewport={{ once: true, amount: 0.3 }} // tăng amount để kích hoạt sớm hơn khi cuộn
+                transition={{ duration: 0.6 }}
+                viewport={{ once: true }}
                 className="bg-[#fcf8f5] flex-1 flex items-center justify-center p-8 md:p-16"
             >
                 <form onSubmit={handleSubmit} className="max-w-xl w-full">
@@ -242,8 +242,8 @@ export default function BookingForm() {
 
             {/* Right Image */}
             <motion.div
-                initial={{ opacity: 0, x: 50 }}
-                whileInView={{ opacity: 1, x: 0 }}
+                initial={{ opacity: 0, y: 50 }}
+                whileInView={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.8, ease: 'easeOut' }}
                 viewport={{ once: true, amount: 0.2 }}
                 className="hidden md:block relative flex-1"

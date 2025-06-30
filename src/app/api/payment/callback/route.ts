@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import crypto from "crypto";
 import { prisma } from "@/lib/prisma";
-import { OrderStatus } from "@prisma/client";
+import { BookingStatus } from "@prisma/client";
 
 export async function GET(req: Request) {
     try {
@@ -24,8 +24,9 @@ export async function GET(req: Request) {
         }
 
         // 🔹 Kiểm tra `orderId` có hợp lệ không
-        const orderId = Number(query["vnp_TxnRef"]);
-        if (isNaN(orderId)) {
+        const orderId = query["vnp_TxnRef"];
+
+        if (!orderId || typeof orderId !== "string") {
             return NextResponse.json({ error: "Mã đơn hàng không hợp lệ" }, { status: 400 });
         }
 
@@ -33,10 +34,9 @@ export async function GET(req: Request) {
 
         if (responseCode === "00") {
             // 🔹 Lấy thông tin đơn hàng hiện tại
-            const existingOrder = await prisma.order.findUnique({
+            const existingOrder = await prisma.booking.findUnique({
                 where: { id: orderId },
             });
-
             if (!existingOrder) {
                 return NextResponse.json({ error: "Không tìm thấy đơn hàng" }, { status: 404 });
             }
@@ -56,13 +56,13 @@ export async function GET(req: Request) {
             }
 
             // 🔹 Cập nhật trạng thái đơn hàng thành "PAID"
-            await prisma.order.update({
+            await prisma.booking.update({
                 where: { id: orderId },
                 data: {
-                    totalPrice: Number(query["vnp_Amount"]) / 100, // Chia 100 vì VNPAY trả về x100 lần
+                    totalPrice: Number(query["vnp_Amount"]) / 100,
                     transactionNo: query["vnp_TransactionNo"] || "",
                     paymentTime: paymentTime,
-                    status: OrderStatus.PAID,
+                    status: BookingStatus.PAID,
                 },
             });
 
