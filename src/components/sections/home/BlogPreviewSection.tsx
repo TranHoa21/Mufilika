@@ -4,7 +4,7 @@ import React from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { FaUser, FaComment } from "react-icons/fa";
-import { motion } from "framer-motion";
+import { motion, Variants } from "framer-motion";
 
 const blogPosts = [
     {
@@ -39,15 +39,15 @@ const blogPosts = [
     },
 ];
 
-const fadeInUp = {
+const fadeInUp: Variants = {
     hidden: { opacity: 0, y: 30 },
-    visible: (i: number) => ({
+    visible: (i: number = 1) => ({
         opacity: 1,
         y: 0,
         transition: {
             delay: i * 0.2,
             duration: 0.6,
-            ease: "easeOut",
+            ease: 'easeOut', // hoặc dùng cubicBezier nếu muốn tuỳ chỉnh
         },
     }),
 };
