@@ -12,7 +12,7 @@ export async function GET(req: NextRequest) {
             return NextResponse.json({ error: 'Thiếu ID TourInDay' }, { status: 400 });
         }
 
-        const day = await prisma.tourData.findUnique({ where: { id } });
+        const day = await prisma.tourdatas.findUnique({ where: { id: Number(id) } });
 
         if (!day) {
             return NextResponse.json({ error: 'TourInDay không tồn tại' }, { status: 404 });
@@ -35,48 +35,74 @@ export async function PUT(req: NextRequest) {
         }
 
         const formData = await req.formData();
-        const name = formData.get('name') as string | null;
-        const slug = formData.get('slug') as string | null;
-        const slugTour = formData.get('slugTour') as string | null;
-        const description = formData.get('description') as string | null;
+        const name_day = formData.get('name_day') as string | null;
+        const name_day_title = formData.get('name_day_title') as string | null;
+        const name_hotel = formData.get('name_hotel') as string | null;
+        const schedule = formData.get('schedule') as string | null;
+        const hotel_introduction = formData.get('hotel_introduction') as string | null;
 
-        if (!name || !slug || !slugTour || !description) {
-            return NextResponse.json({ error: 'Thiếu thông tin' }, { status: 400 });
+        if (!name_day || !name_day_title || !schedule) {
+            return NextResponse.json({ error: 'Thiếu thông tin bắt buộc' }, { status: 400 });
         }
 
-        // ✅ Xử lý ảnh nếu có
-        let newImageUrl: string | null = null;
-        const imageFile = formData.get('image') as File | null;
+        // ✅ Xử lý ảnh image_in_day
+        let newImageInDayUrl: string | null = null;
+        const imageInDayFile = formData.get('image_in_day') as File | null;
 
-        if (imageFile && imageFile.type.startsWith('image/')) {
-            const arrayBuffer = await imageFile.arrayBuffer();
+        if (imageInDayFile && imageInDayFile.type.startsWith('image/')) {
+            const arrayBuffer = await imageInDayFile.arrayBuffer();
             const buffer = Buffer.from(arrayBuffer);
 
-            const upload = await cloudinary.uploader.upload(`data:${imageFile.type};base64,${buffer.toString('base64')}`, {
-                folder: 'tour-in-day',
-            });
+            const upload = await cloudinary.uploader.upload(
+                `data:${imageInDayFile.type};base64,${buffer.toString('base64')}`,
+                { folder: 'tour-in-day' }
+            );
 
-            newImageUrl = upload.secure_url;
+            newImageInDayUrl = upload.secure_url;
         }
 
-        // ✅ Cập nhật TourInDay
-        const updatedDay = await prisma.tourData.update({
-            where: { id },
+        // ✅ Xử lý ảnh image_hotel
+        let newImageHotelUrl: string | null = null;
+        const imageHotelFile = formData.get('image_hotel') as File | null;
+
+        if (imageHotelFile && imageHotelFile.type.startsWith('image/')) {
+            const arrayBuffer = await imageHotelFile.arrayBuffer();
+            const buffer = Buffer.from(arrayBuffer);
+
+            const upload = await cloudinary.uploader.upload(
+                `data:${imageHotelFile.type};base64,${buffer.toString('base64')}`,
+                { folder: 'tour-in-day' }
+            );
+
+            newImageHotelUrl = upload.secure_url;
+        }
+
+        // Lấy dữ liệu cũ để giữ ảnh nếu không có ảnh mới
+        const currentDay = await prisma.tourdatas.findUnique({
+            where: { id: Number(id) },
+        });
+
+        const updatedDay = await prisma.tourdatas.update({
+            where: { id: Number(id) },
             data: {
-                name,
-                slug,
-                slugTour,
-                description,
-                image: newImageUrl || undefined, // giữ ảnh cũ nếu không có ảnh mới
+                name_day,
+                name_day_title,
+                name_hotel: name_hotel || undefined,
+                schedule,
+                hotel_introduction: hotel_introduction || undefined,
+                image_in_day: newImageInDayUrl || currentDay?.image_in_day || null,
+                image_hotel: newImageHotelUrl || currentDay?.image_hotel || null,
             },
         });
 
         return NextResponse.json({ success: true, day: updatedDay }, { status: 200 });
+
     } catch (error) {
         console.error('Lỗi khi cập nhật TourInDay:', error);
         return NextResponse.json({ error: 'Lỗi server' }, { status: 500 });
     }
 }
+
 
 export async function DELETE(req: NextRequest) {
     try {
@@ -87,13 +113,13 @@ export async function DELETE(req: NextRequest) {
             return NextResponse.json({ error: 'Thiếu ID TourInDay' }, { status: 400 });
         }
 
-        const day = await prisma.tourData.findUnique({ where: { id } });
+        const day = await prisma.tourdatas.findUnique({ where: { id: Number(id) } });
 
         if (!day) {
             return NextResponse.json({ error: 'TourInDay không tồn tại' }, { status: 404 });
         }
 
-        await prisma.tourData.delete({ where: { id } });
+        await prisma.tourdatas.delete({ where: { id: Number(id) } });
 
         return NextResponse.json({ success: true, message: 'Xoá TourInDay thành công' }, { status: 200 });
     } catch (error) {
