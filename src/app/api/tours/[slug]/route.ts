@@ -12,12 +12,12 @@ export async function GET(req: NextRequest) {
             return NextResponse.json({ error: 'Thiếu slug tour' }, { status: 400 });
         }
 
-        const tour = await prisma.tour.findUnique({
+        const tour = await prisma.tours.findUnique({
             where: { slug },
             include: {
-                days: true,
-                bookings: true,
-                reviews: true,
+                tourDetails: true,    // Đúng với schema
+                bookingItems: true,   // Đúng với schema
+                testimonials: true,   // Đúng với schema
             },
         });
 
@@ -49,8 +49,6 @@ export async function PUT(req: NextRequest) {
         const duration = formData.get('duration') as string | null;
         const maxGuests = formData.get('maxGuests') as string | null;
         const price = formData.get('price') as string | null;
-        const included = formData.getAll('included') as string[];
-        const notIncluded = formData.getAll('notIncluded') as string[];
 
         if (!name || !newSlug || !address || !description || !duration || !maxGuests || !price) {
             return NextResponse.json({ error: 'Thiếu thông tin tour' }, { status: 400 });
@@ -70,7 +68,7 @@ export async function PUT(req: NextRequest) {
             newImageUrl = upload.secure_url;
         }
 
-        const updatedTour = await prisma.tour.update({
+        const updatedTour = await prisma.tours.update({
             where: { slug },
             data: {
                 name,
@@ -80,9 +78,7 @@ export async function PUT(req: NextRequest) {
                 duration: parseInt(duration),
                 maxGuests: parseInt(maxGuests),
                 price: parseFloat(price),
-                included,
-                notIncluded,
-                image: newImageUrl || undefined,
+                image: newImageUrl || undefined, // Giữ ảnh cũ nếu không upload mới
             },
         });
 
@@ -105,14 +101,14 @@ export async function DELETE(req: NextRequest) {
             return NextResponse.json({ error: 'Thiếu slug tour' }, { status: 400 });
         }
 
-        const tour = await prisma.tour.findUnique({ where: { slug } });
+        const tour = await prisma.tours.findUnique({ where: { slug } });
 
         if (!tour) {
             return NextResponse.json({ error: 'Tour không tồn tại' }, { status: 404 });
         }
 
         // Xoá bản ghi liên quan nếu cần
-        await prisma.tour.delete({ where: { slug } });
+        await prisma.tours.delete({ where: { slug } });
 
         return NextResponse.json({ success: true, message: 'Xóa tour thành công' }, { status: 200 });
     } catch (error) {
