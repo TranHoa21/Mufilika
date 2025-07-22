@@ -1,260 +1,117 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import Image from 'next/image'
+import { useRouter } from 'next/navigation'
+import { useState } from 'react'
 import { motion } from 'framer-motion'
+import MultiSelectWithDB from '@/components/sections/packages/MultiSelectWithDB'
+import currency from 'currency.js'
 
-type Tour = {
-    id: string
-    name: string
-    price: number
-}
+export default function BookingStepOne() {
+    const router = useRouter()
 
-export default function BookingForm() {
     const [formData, setFormData] = useState({
         fullName: '',
-        gender: '',
         email: '',
         departureDate: '',
-        destination: '', // chứa tour.id
-        tourType: '',
+        destination: '',
     })
 
-    const [destinations, setDestinations] = useState<Tour[]>([])
-    const [showExtraFields, setShowExtraFields] = useState(false)
     const [phone, setPhone] = useState('')
-    const [paymentMethod, setPaymentMethod] = useState('')
     const [quantity, setQuantity] = useState(1)
+    const [price, setPrice] = useState(currency(0))
+    const [totalAmount, setTotalAmount] = useState(currency(0))
 
-    useEffect(() => {
-        const fetchDestinations = async () => {
-            try {
-                const res = await fetch('/api/tours')
-                const data = await res.json()
-                if (Array.isArray(data)) {
-                    setDestinations(data)
-                }
-            } catch (error) {
-                console.error('Failed to fetch destinations:', error)
-            }
-        }
-
-        fetchDestinations()
-    }, [])
-
-    const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const { name, value } = e.target
-        setFormData(prev => ({ ...prev, [name]: value }))
+        setFormData((prev) => ({ ...prev, [name]: value }))
     }
 
-    const selectedTour = destinations.find(t => t.id === formData.destination)
-    const price = selectedTour?.price ?? 0
-    const total = price * quantity
-
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault()
-
-        if (!showExtraFields) {
-            setShowExtraFields(true)
+    const handleNext = () => {
+        const { fullName, email, departureDate, destination } = formData
+        if (!fullName || !email || !departureDate || !destination || !phone) {
+            alert('Please fill out all fields.')
             return
         }
 
-        if (!phone || !paymentMethod || quantity < 1) {
-            alert('Please complete all fields before submitting.')
-            return
-        }
-
-        const bookingPayload = {
-            name: formData.fullName,
-            email: formData.email,
+        const query = new URLSearchParams({
+            fullName,
+            email,
+            departureDate,
+            destination,
             phone,
-            paymentMethod,
-            totalPrice: total,
-            items: [
-                {
-                    tourId: formData.destination, // đã lưu là tour.id
-                    quantity,
-                    price,
-                },
-            ],
-            userId: null, // hoặc user.id nếu có login
-        }
+            quantity: quantity.toString(),
+            price: price.value.toString(),
+            total: totalAmount.value.toString(),
+        }).toString()
 
-        try {
-            const res = await fetch('/api/booking', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(bookingPayload),
-            })
-
-            const result = await res.json()
-
-            if (!res.ok) {
-                throw new Error(result.error || 'Booking failed')
-            }
-
-            alert('🎉 Booking successful!')
-            // Reset form hoặc chuyển trang tùy bạn
-        } catch (err) {
-            console.error('Booking error:', err)
-            alert('❌ Booking failed: ' + err)
-        }
+        router.push(`/booking/info?${query}`)
     }
-
-    const staticTourOptions = [
-        'South Luangwa National Park',
-        'Kasanka National Park',
-        'Livingstone, Zambia',
-        'Lower Zambezi National Park',
-    ]
 
     return (
-        <section className="flex flex-col md:flex-row w-full min-h-screen">
-            {/* Left Form */}
+        <section className="min-h-screen bg-[#fefdfc] flex items-center justify-center px-4 py-12">
             <motion.div
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
+                initial={{ opacity: 0, y: 40 }}
+                animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6 }}
-                viewport={{ once: true }}
-                className="bg-[#fcf8f5] flex-1 flex items-center justify-center p-8 md:p-16"
+                className="w-full max-w-3xl bg-white shadow-lg rounded-lg p-8"
             >
-                <form onSubmit={handleSubmit} className="max-w-xl w-full">
-                    <p className="text-sm uppercase tracking-widest text-[#c08b5c] font-semibold mb-2">Booking Form</p>
-                    <h2 className="text-4xl font-bold mb-4">Start your safari journey today</h2>
-                    <p className="text-gray-600 mb-8">
-                        Don’t miss out on an incredible desert experience! Complete the booking form to secure
-                        your spot and prepare for the adventure.
-                    </p>
+                <h2 className="text-3xl font-bold mb-6 text-center text-[#a86a3d]">
+                    Book Your Safari Tour
+                </h2>
 
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
-                        <input
-                            type="text"
-                            name="fullName"
-                            placeholder="e.g. John Doe"
-                            value={formData.fullName}
-                            onChange={handleChange}
-                            className="border border-gray-300 rounded px-4 py-3 placeholder-gray-400"
-                            required
-                        />
-                        <select
-                            name="gender"
-                            value={formData.gender}
-                            onChange={handleChange}
-                            className="border border-gray-300 rounded px-4 py-3 text-gray-600"
-                            required
-                        >
-                            <option value="">Select</option>
-                            <option>Male</option>
-                            <option>Female</option>
-                            <option>Other</option>
-                        </select>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <input
+                        name="fullName"
+                        value={formData.fullName}
+                        onChange={handleChange}
+                        placeholder="Full Name"
+                        className="input"
+                    />
+                    <input
+                        name="email"
+                        value={formData.email}
+                        onChange={handleChange}
+                        placeholder="Email"
+                        className="input"
+                        type="email"
+                    />
+                    <input
+                        name="departureDate"
+                        value={formData.departureDate}
+                        onChange={handleChange}
+                        placeholder="Departure Date"
+                        type="date"
+                        className="input"
+                    />
+                    <input
+                        value={phone}
+                        onChange={(e) => setPhone(e.target.value)}
+                        placeholder="Phone Number"
+                        className="input"
+                        type="tel"
+                    />
+                </div>
 
-                        <input
-                            type="email"
-                            name="email"
-                            placeholder="e.g. hello@deverust.com"
-                            value={formData.email}
-                            onChange={handleChange}
-                            className="border border-gray-300 rounded px-4 py-3 placeholder-gray-400"
-                            required
-                        />
-                        <input
-                            type="date"
-                            name="departureDate"
-                            value={formData.departureDate}
-                            onChange={handleChange}
-                            className="border border-gray-300 rounded px-4 py-3 text-gray-600"
-                            required
-                        />
+                <div className="mt-6">
+                    <MultiSelectWithDB
+                        onPlacesChange={(ids) => setFormData((prev) => ({ ...prev, destination: ids[0]?.toString() || '' }))}
+                        onPrices={(p) => {
+                            const total = p.reduce((sum, val) => sum + val, 0)
+                            setPrice(currency(total))
+                        }}
+                        onTotalAmountChange={(t) => setTotalAmount(t)}
+                        onNumTravelersChange={(q) => setQuantity(q)}
+                        onSelectePricesTitle={() => { }}
+                        totalAmount={totalAmount}
+                    />
+                </div>
 
-                        <select
-                            name="destination"
-                            value={formData.destination}
-                            onChange={handleChange}
-                            className="border border-gray-300 rounded px-4 py-3 text-gray-600"
-                            required
-                        >
-                            <option value="">Select Destination</option>
-                            {destinations.map((tour) => (
-                                <option key={tour.id} value={tour.id}>{tour.name}</option>
-                            ))}
-                        </select>
-
-                        <select
-                            name="tourType"
-                            value={formData.tourType}
-                            onChange={handleChange}
-                            className="border border-gray-300 rounded px-4 py-3 text-gray-600"
-                            required
-                        >
-                            <option value="">Select Tour Type</option>
-                            {staticTourOptions.map((tour, index) => (
-                                <option key={index} value={tour}>{tour}</option>
-                            ))}
-                        </select>
-                    </div>
-
-                    {showExtraFields && (
-                        <div className="mt-6 space-y-4 border-t pt-6">
-                            <input
-                                type="tel"
-                                placeholder="Phone Number"
-                                value={phone}
-                                onChange={(e) => setPhone(e.target.value)}
-                                className="w-full border border-gray-300 rounded px-4 py-3 placeholder-gray-400"
-                                required
-                            />
-
-                            <select
-                                value={paymentMethod}
-                                onChange={(e) => setPaymentMethod(e.target.value)}
-                                className="w-full border border-gray-300 rounded px-4 py-3 text-gray-600"
-                                required
-                            >
-                                <option value="">Select Payment Method</option>
-                                <option value="cash">Cash</option>
-                                <option value="credit">Credit Card</option>
-                                <option value="bank">Bank Transfer</option>
-                            </select>
-
-                            <input
-                                type="number"
-                                min={1}
-                                value={quantity}
-                                onChange={(e) => setQuantity(parseInt(e.target.value) || 1)}
-                                className="w-full border border-gray-300 rounded px-4 py-3"
-                                required
-                            />
-
-                            <p className="text-gray-700">Price per person: <strong>${price}</strong></p>
-                            <p className="text-gray-700">Total: <strong>${total}</strong></p>
-                        </div>
-                    )}
-
-                    <button
-                        type="submit"
-                        className="mt-6 bg-[#a86a3d] text-white px-6 py-3 rounded font-semibold hover:bg-[#8f5531] transition"
-                    >
-                        {showExtraFields ? 'Submit Booking' : 'Book Now'}
-                    </button>
-                </form>
-            </motion.div>
-
-            {/* Right Image */}
-            <motion.div
-                initial={{ opacity: 0, y: 50 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.8, ease: 'easeOut' }}
-                viewport={{ once: true, amount: 0.2 }}
-                className="hidden md:block relative flex-1"
-            >
-                <Image
-                    src="/images/images2.webp"
-                    alt="Safari Family"
-                    fill
-                    className="object-cover"
-                    loading="lazy"
-                />
+                <button
+                    onClick={handleNext}
+                    className="mt-8 w-full bg-[#a86a3d] text-white py-3 rounded-md text-lg font-semibold hover:bg-[#8f5531] transition"
+                >
+                    Next Step
+                </button>
             </motion.div>
         </section>
     )

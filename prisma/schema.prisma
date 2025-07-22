@@ -8,17 +8,17 @@ datasource db {
 }
 
 model User {
-  id        String            @id @default(uuid())
-  email     String            @unique
+  id        String   @id @default(uuid())
+  email     String   @unique
   password  String
   name      String?
-  role      Role              @default(CUSTOMER)
-  createdAt DateTime          @default(now())
+  role      Role     @default(CUSTOMER)
+  createdAt DateTime @default(now())
 
-  bookings     Booking[]         // Các đơn đặt tour của người dùng
-  messages     ContactMessage[]  @relation("UserMessages") // Tin nhắn liên hệ
-   posts     Post[] @relation("AuthorPosts")
-  comments     Comment[]
+  bookings      Booking[] // Các đơn đặt tour của người dùng
+  messages      ContactMessage[] @relation("UserMessages") // Tin nhắn liên hệ
+  posts         Post[]           @relation("AuthorPosts")
+  comments      Comment[]
   notifications Notification[]
 }
 
@@ -26,49 +26,55 @@ enum Role {
   ADMIN
   CUSTOMER
 }
-model Tour {
-  id            String        @id @default(cuid())
-  name          String
-  slug          String        @unique
-  address       String
-  description   String
-  duration      Int
-  maxGuests     Int
-  price         Float
-  image         String
-  included      String[]
-  notIncluded   String[]
 
-  days          TourInDay[]   @relation("TourDaysBySlug") // 
-  bookings      BookingItem[]
-  reviews       Testimonial[]
+model Tours {
+  id           Int           @id @default(autoincrement())
+  name         String        @db.VarChar(255)
+  slug         String        @unique @db.VarChar(255)
+  address      String        @db.VarChar(255)
+  description  String
+  duration     Int
+  maxGuests    Int
+  price        Float
+  image        String?       @db.VarChar(255)
+  createdAt    DateTime      @default(now()) @db.Timestamp(6)
+  updatedAt    DateTime      @default(now()) @db.Timestamp(6)
+
+  bookingItems BookingItem[]
+  tourDetails  Tourdatas[]   @relation("TourToTourdatas")
+  testimonials Testimonial[]
 }
 
-model TourInDay {
-  id          String   @id @default(cuid())
-  name        String
-  slug        String   @unique
-  slugTour    String   // Khóa ngoại
-  image       String?
-  description String
 
-  tour        Tour     @relation("TourDaysBySlug", fields: [slugTour], references: [slug])
+model Tourdatas {
+  id                 Int      @id @default(autoincrement())
+  tourId             Int?
+  tour               Tours?   @relation("TourToTourdatas", fields: [tourId], references: [id])
+  name_day           String?
+  image_hotel        String?  @db.VarChar(255)
+  image_in_day       String?  @db.VarChar(255)
+  name_day_title     String?
+  name_hotel         String?
+  schedule           String?
+  hotel_introduction String?
+  createdAt          DateTime @default(now()) @db.Timestamp(6)
+  updatedAt          DateTime @default(now()) @db.Timestamp(6)
 }
 
 model Testimonial {
   id       String @id @default(uuid())
-  rating   Int    // 1–5
+  rating   Int // 1–5
   comment  String
   customer String
-  tourId   String
-  tour     Tour   @relation(fields: [tourId], references: [id])
+  tourId   Int
+  tour     Tours  @relation(fields: [tourId], references: [id])
 }
 
 model Booking {
-  id            String         @id @default(uuid())
+  id            String        @id @default(uuid())
   totalPrice    Float
-  status        BookingStatus  @default(PENDING)
-  createdAt     DateTime       @default(now())
+  status        BookingStatus @default(PENDING)
+  createdAt     DateTime      @default(now())
   name          String
   email         String
   phone         String
@@ -95,11 +101,11 @@ model BookingItem {
   bookingId String
   booking   Booking @relation(fields: [bookingId], references: [id])
 
-  tourId    String
-  tour      Tour    @relation(fields: [tourId], references: [id])
+  tourId Int
+  tour   Tours @relation(fields: [tourId], references: [id])
 
-  quantity  Int     @default(1)
-  price     Float
+  quantity Int   @default(1)
+  price    Float
 }
 
 model ContactMessage {
@@ -110,14 +116,14 @@ model ContactMessage {
   message   String
   createdAt DateTime @default(now())
 
-  userId    String?
-  user      User?    @relation("UserMessages", fields: [userId], references: [id])
+  userId String?
+  user   User?   @relation("UserMessages", fields: [userId], references: [id])
 }
 
 model Post {
-  id              String   @id @default(uuid())
+  id              String  @id @default(uuid())
   title           String
-  slug            String   @unique
+  slug            String  @unique
   excerpt         String?
   content         String
   imageUrl        String?
@@ -125,32 +131,31 @@ model Post {
   metaDescription String?
   keywords        String?
   canonicalUrl    String?
-  published       Boolean  @default(false)
-  status          String   @default("draft")
-  featured        Boolean  @default(false)
-  likes           Int      @default(0)
-  views           Int      @default(0)
+  published       Boolean @default(false)
+  status          String  @default("draft")
+  featured        Boolean @default(false)
+  likes           Int     @default(0)
+  views           Int     @default(0)
   readingTime     Int?
-  postType        String   @default("article")
+  postType        String  @default("article")
 
   // 👇 Quan hệ với User (author)
-  authorId        String?
-  author          User?    @relation("AuthorPosts", fields: [authorId], references: [id])
+  authorId String?
+  author   User?   @relation("AuthorPosts", fields: [authorId], references: [id])
 
   // 👇 Quan hệ với Category
-  categoryId      String?
-  category        Category? @relation("CategoryPosts", fields: [categoryId], references: [id])
+  categoryId String?
+  category   Category? @relation("CategoryPosts", fields: [categoryId], references: [id])
 
   // 👇 Quan hệ khác
-  tags            Tag[]     @relation("PostTags")
-  images          PostImage[]
-  comments        Comment[]
-  viewsLog        PostView[]
+  tags     Tag[]       @relation("PostTags")
+  images   PostImage[]
+  comments Comment[]
+  viewsLog PostView[]
 
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
-
 
 model Category {
   id    String @id @default(uuid())
@@ -160,22 +165,21 @@ model Category {
 }
 
 model Tag {
-  id    String @id @default(uuid())
-  name  String @unique
-  slug  String @unique
+  id   String @id @default(uuid())
+  name String @unique
+  slug String @unique
 
   // Sửa tại đây
   posts Post[] @relation("PostTags")
 }
 
-
 model Comment {
-  id        String   @id @default(uuid())
-  postId    String
-  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+  id     String @id @default(uuid())
+  postId String
+  post   Post   @relation(fields: [postId], references: [id], onDelete: Cascade)
 
-  userId    String?
-  user      User?    @relation(fields: [userId], references: [id])
+  userId String?
+  user   User?   @relation(fields: [userId], references: [id])
 
   content   String
   status    String   @default("pending")
@@ -183,14 +187,15 @@ model Comment {
 }
 
 model PostView {
-  id        String   @id @default(uuid())
-  postId    String
-  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+  id     String @id @default(uuid())
+  postId String
+  post   Post   @relation(fields: [postId], references: [id], onDelete: Cascade)
 
   ip        String
   userAgent String
   createdAt DateTime @default(now())
 }
+
 model PostImage {
   id        Int      @id @default(autoincrement()) // ID duy nhất, tự động tăng
   imageUrl  String // URL của hình ảnh
@@ -210,9 +215,9 @@ model Notification {
   seen      Boolean  @default(false)
   createdAt DateTime @default(now())
 
-  userId    String
-  user      User     @relation(fields: [userId], references: [id])
+  userId String
+  user   User   @relation(fields: [userId], references: [id])
 
   bookingId String
-  booking   Booking  @relation(fields: [bookingId], references: [id])
+  booking   Booking @relation(fields: [bookingId], references: [id])
 }

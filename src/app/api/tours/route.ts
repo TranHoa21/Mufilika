@@ -5,7 +5,7 @@ import cloudinary from '@/lib/cloudinary';
 // ✅ API GET: Lấy tất cả sản phẩm
 export async function GET() {
     try {
-        const tours = await prisma.tour.findMany();
+        const tours = await prisma.tours.findMany();
         return NextResponse.json(tours);
     } catch (error) {
         console.error(error);
@@ -25,8 +25,6 @@ export async function POST(req: NextRequest) {
         const duration = formData.get('duration') as string | null;
         const maxGuests = formData.get('maxGuests') as string | null;
         const price = formData.get('price') as string | null;
-        const included = formData.getAll('included') as string[];
-        const notIncluded = formData.getAll('notIncluded') as string[];
 
         if (!name || !slug || !address || !description || !duration || !maxGuests || !price) {
             return NextResponse.json({ error: 'Thiếu thông tin tour' }, { status: 400 });
@@ -48,7 +46,7 @@ export async function POST(req: NextRequest) {
         }
 
         // Lưu tour vào DB
-        const newTour = await prisma.tour.create({
+        const newTour = await prisma.tours.create({
             data: {
                 name,
                 slug,
@@ -58,8 +56,6 @@ export async function POST(req: NextRequest) {
                 maxGuests: parseInt(maxGuests),
                 price: parseFloat(price),
                 image: imageUrl ?? '',
-                included,
-                notIncluded,
             },
         });
 
