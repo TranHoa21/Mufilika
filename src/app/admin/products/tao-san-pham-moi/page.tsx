@@ -76,7 +76,7 @@ export default function AdminAddTourPage() {
                 dayForm.append('description', day.description);
                 if (day.image) dayForm.append('image', day.image);
 
-                await fetch('/api/tourInDay', {
+                await fetch('/api/tourData', {
                     method: 'POST',
                     body: dayForm,
                 });

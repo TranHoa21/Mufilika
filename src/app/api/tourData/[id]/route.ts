@@ -12,7 +12,7 @@ export async function GET(req: NextRequest) {
             return NextResponse.json({ error: 'Thiếu ID TourInDay' }, { status: 400 });
         }
 
-        const day = await prisma.tourInDay.findUnique({ where: { id } });
+        const day = await prisma.tourData.findUnique({ where: { id } });
 
         if (!day) {
             return NextResponse.json({ error: 'TourInDay không tồn tại' }, { status: 404 });
@@ -60,7 +60,7 @@ export async function PUT(req: NextRequest) {
         }
 
         // ✅ Cập nhật TourInDay
-        const updatedDay = await prisma.tourInDay.update({
+        const updatedDay = await prisma.tourData.update({
             where: { id },
             data: {
                 name,
@@ -87,13 +87,13 @@ export async function DELETE(req: NextRequest) {
             return NextResponse.json({ error: 'Thiếu ID TourInDay' }, { status: 400 });
         }
 
-        const day = await prisma.tourInDay.findUnique({ where: { id } });
+        const day = await prisma.tourData.findUnique({ where: { id } });
 
         if (!day) {
             return NextResponse.json({ error: 'TourInDay không tồn tại' }, { status: 404 });
         }
 
-        await prisma.tourInDay.delete({ where: { id } });
+        await prisma.tourData.delete({ where: { id } });
 
         return NextResponse.json({ success: true, message: 'Xoá TourInDay thành công' }, { status: 200 });
     } catch (error) {
